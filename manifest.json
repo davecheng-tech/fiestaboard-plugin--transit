@@ -1,12 +1,12 @@
 {
-  "id": "traffic",
-  "name": "Traffic",
-  "version": "1.1.2",
-  "description": "Display commute times and traffic conditions using Google Routes API",
+  "id": "transit",
+  "name": "Transit",
+  "version": "1.0.0",
+  "description": "Display public transit travel times using Google Routes API",
   "author": "FiestaBoard Team",
-  "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--traffic",
+  "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--transit",
   "documentation": "README.md",
-  "icon": "car",
+  "icon": "train-front",
   "category": "transit",
   "min_refresh_seconds": 60,
   "settings_schema": {
@@ -14,7 +14,7 @@
     "properties": {
       "enabled": {
         "type": "boolean",
-        "title": "Enable Traffic",
+        "title": "Enable Transit",
         "default": false
       },
       "api_key": {
@@ -26,7 +26,7 @@
       "routes": {
         "type": "array",
         "title": "Routes",
-        "description": "Commute routes to monitor (max 4)",
+        "description": "Transit routes to monitor (max 4)",
         "maxItems": 4,
         "items": {
           "type": "object",
@@ -74,17 +74,17 @@
       "description": "Google Cloud API key with Routes API enabled"
     },
     {
-      "name": "TRAFFIC_ORIGIN",
+      "name": "TRANSIT_ORIGIN",
       "required": false,
       "description": "Default origin address"
     },
     {
-      "name": "TRAFFIC_DESTINATION",
+      "name": "TRANSIT_DESTINATION",
       "required": false,
       "description": "Default destination address"
     },
     {
-      "name": "TRAFFIC_DESTINATION_NAME",
+      "name": "TRANSIT_DESTINATION_NAME",
       "required": false,
       "description": "Display name for destination",
       "default": "DOWNTOWN"
@@ -93,7 +93,7 @@
   "variables": {
     "groups": {
       "commute": {
-        "label": "Commute Data"
+        "label": "Transit Data"
       },
       "display": {
         "label": "Display"
@@ -101,32 +101,11 @@
     },
     "simple": {
       "duration_minutes": {
-        "description": "Trip duration in minutes for first route",
+        "description": "Transit trip duration in minutes for first route",
         "type": "number",
         "max_length": 3,
         "group": "commute",
-        "example": "25"
-      },
-      "delay_minutes": {
-        "description": "Extra minutes due to traffic",
-        "type": "number",
-        "max_length": 3,
-        "group": "commute",
-        "example": "8"
-      },
-      "traffic_status": {
-        "description": "Traffic condition (LIGHT, MODERATE, HEAVY)",
-        "type": "string",
-        "max_length": 8,
-        "group": "commute",
-        "example": "MODERATE"
-      },
-      "traffic_color": {
-        "description": "Color code for traffic status",
-        "type": "string",
-        "max_length": 4,
-        "group": "commute",
-        "example": "{63}"
+        "example": "32"
       },
       "destination_name": {
         "description": "Display name for the route destination",
@@ -136,11 +115,11 @@
         "example": "WORK"
       },
       "formatted": {
-        "description": "Pre-formatted commute summary",
+        "description": "Pre-formatted transit summary",
         "type": "string",
         "max_length": 22,
         "group": "display",
-        "example": "WORK 25min +8"
+        "example": "WORK: 32m"
       },
       "route_count": {
         "description": "Number of monitored routes",
@@ -149,12 +128,12 @@
         "group": "display",
         "example": "2"
       },
-      "worst_delay": {
-        "description": "Worst delay across all routes in minutes",
+      "longest_duration": {
+        "description": "Longest trip duration across all routes in minutes",
         "type": "number",
         "max_length": 3,
         "group": "commute",
-        "example": "12"
+        "example": "47"
       }
     },
     "arrays": {
@@ -162,9 +141,6 @@
         "label_field": "destination_name",
         "item_fields": [
           "duration_minutes",
-          "delay_minutes",
-          "traffic_status",
-          "traffic_color",
           "destination_name",
           "formatted"
         ]
@@ -173,75 +149,50 @@
   },
   "max_lengths": {
     "routes.*.duration_minutes": 3,
-    "routes.*.delay_minutes": 3,
-    "routes.*.traffic_status": 8,
     "routes.*.destination_name": 10,
     "routes.*.formatted": 22
-  },
-  "color_rules_schema": {
-    "traffic_status": {
-      "type": "match",
-      "description": "Color based on traffic status",
-      "default_rules": [
-        {
-          "condition": "==",
-          "value": "LIGHT",
-          "color": "green"
-        },
-        {
-          "condition": "==",
-          "value": "MODERATE",
-          "color": "yellow"
-        },
-        {
-          "condition": "==",
-          "value": "HEAVY",
-          "color": "red"
-        }
-      ]
-    }
   },
   "fiestaboard_version": ">=2.10.0",
   "screenshots": [
     {
       "src": "docs/board-display.png",
-      "alt": "Traffic displayed on a Vestaboard",
-      "caption": "Display commute times and traffic conditions using Google Routes API",
+      "alt": "Transit times displayed on a Vestaboard",
+      "caption": "Display public transit travel times using Google Routes API",
       "primary": true
     }
   ],
-  "teaser": "WORK 25 MIN +8",
+  "teaser": "UNION STN 32 MIN",
   "previews": [
     {
       "device_type": "flagship",
       "rows": [
-        "{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}",
-        "    SF TO OAKLAND",
+        "{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}",
+        "   TRANSIT TIMES",
         "",
-        " BAY BRIDGE    25 MIN",
-        " VIA I-880     32 MIN",
-        "{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}{65}"
+        " UNION STN     32 MIN",
+        " AIRPORT       47 MIN",
+        "{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}{67}"
       ]
     },
     {
       "device_type": "note",
       "rows": [
-        "{65}{65} TRAFFIC",
-        "WORK 25 MIN",
-        "{63}+8 MIN DELAY"
+        "{67}{67} TRANSIT",
+        "UNION STN",
+        "32 MIN"
       ]
     }
   ],
   "demo": {
     "flagship": {
-      "name": "Traffic Demo",
+      "name": "Transit Demo",
       "template": [
-        "Commute Times",
-        "{{traffic.destination_name}}",
-        "{{traffic.duration_minutes}} min",
-        "+{{traffic.delay_minutes}} delay",
-        "{{traffic.traffic_status}} {{traffic.traffic_color}}",
-        "{{traffic.formatted}}"
+        "Transit Times",
+        "{{transit.destination_name}}",
+        "{{transit.duration_minutes}} min",
+        "{{transit.routes.1.formatted}}",
+        "{{transit.route_count}} routes",
+        "{{transit.formatted}}"
       ],
       "line_metadata": [
         {
@@ -271,11 +222,11 @@
       ]
     },
     "note": {
-      "name": "Traffic (Note)",
+      "name": "Transit (Note)",
       "template": [
-        "{{traffic.destination_name}}",
-        "{{traffic.duration_minutes}} MIN",
-        "+{{traffic.delay_minutes}} DELAY"
+        "{{transit.destination_name}}",
+        "{{transit.duration_minutes}} MIN",
+        "{{transit.routes.1.formatted}}"
       ],
       "line_metadata": [
         {

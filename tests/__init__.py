@@ -1,2 +1,2 @@
-"""Tests for the traffic plugin."""
+"""Tests for the transit plugin."""
 

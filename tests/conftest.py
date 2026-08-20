@@ -1,4 +1,4 @@
-"""Plugin test fixtures and configuration for traffic."""
+"""Plugin test fixtures and configuration for transit."""
 
 import pytest
 from unittest.mock import patch, MagicMock

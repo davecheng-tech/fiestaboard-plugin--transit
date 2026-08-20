@@ -1,21 +1,22 @@
-# Traffic Plugin
+# Transit Plugin
 
-![Traffic Display](./docs/board-display.png)
+![Transit Display](./docs/board-display.png)
 
-Display commute times and traffic conditions using Google Routes API.
+Display public transit travel times using Google Routes API.
 
 **→ [Setup Guide](./docs/SETUP.md)** - API key registration and route configuration
 
 ## Overview
 
-The Traffic plugin fetches real-time commute times from Google Routes API, showing drive times with traffic delays for multiple routes.
+The Transit plugin fetches public transit travel times from Google Routes API, showing door-to-door trip durations (bus, train, subway, tram) for multiple routes.
+
+It uses the same Google Routes API — and the same API key — as the [Traffic plugin](https://github.com/Fiestaboard/fiestaboard-plugin--traffic), but requests `travelMode: TRANSIT` instead of `DRIVE`. No additional Google API needs to be enabled.
 
 ## Features
 
-- Real-time drive time estimates
-- Traffic delay calculations
-- Multiple route monitoring
-- Color-coded traffic status
+- Real-time public transit trip durations
+- Multiple route monitoring (up to 4)
+- Runs alongside the Traffic plugin as a separate plugin
 
 ## Quick Setup
 
@@ -26,31 +27,27 @@ For detailed setup instructions including API key registration, see the **[Setup
 ### Primary Route (First)
 
 ```
-{{traffic.duration_minutes}}  # Total drive time (e.g., "25")
-{{traffic.delay_minutes}}     # Delay due to traffic (e.g., "5")
-{{traffic.traffic_status}}    # LIGHT, MODERATE, or HEAVY
-{{traffic.traffic_color}}     # Color tile
-{{traffic.destination_name}}  # Display name (e.g., "WORK")
-{{traffic.formatted}}         # Pre-formatted line
+{{transit.duration_minutes}}  # Total transit time (e.g., "32")
+{{transit.destination_name}}  # Display name (e.g., "UNION STN")
+{{transit.formatted}}         # Pre-formatted line (e.g., "UNION STN: 32m")
 ```
 
 ### Aggregates
 
 ```
-{{traffic.route_count}}       # Number of routes
-{{traffic.worst_delay}}       # Longest delay (minutes)
+{{transit.route_count}}       # Number of routes
+{{transit.longest_duration}}  # Longest trip across all routes (minutes)
 ```
 
 ### Individual Routes (Array)
 
 ```
-{{traffic.routes.0.destination_name}}   # First route name
-{{traffic.routes.0.duration_minutes}}   # First route time
-{{traffic.routes.0.delay_minutes}}      # First route delay
-{{traffic.routes.0.formatted}}          # First route formatted
+{{transit.routes.0.destination_name}}   # First route name
+{{transit.routes.0.duration_minutes}}   # First route time
+{{transit.routes.0.formatted}}          # First route formatted
 
-{{traffic.routes.1.destination_name}}   # Second route name
-{{traffic.routes.1.formatted}}          # Second route formatted
+{{transit.routes.1.destination_name}}   # Second route name
+{{transit.routes.1.formatted}}          # Second route formatted
 ```
 
 ## Example Templates
@@ -58,29 +55,29 @@ For detailed setup instructions including API key registration, see the **[Setup
 ### Single Route
 
 ```
-{center}COMMUTE
-{{traffic.destination_name}}
-{{traffic.duration_minutes}} minutes
-{{traffic.traffic_status}}
+{center}TRANSIT
+{{transit.destination_name}}
+{{transit.duration_minutes}} minutes
 ```
 
 ### Multiple Routes
 
 ```
-{center}TRAFFIC
-{{traffic.routes.0.formatted}}
-{{traffic.routes.1.formatted}}
-{{traffic.routes.2.formatted}}
+{center}TRANSIT
+{{transit.routes.0.formatted}}
+{{transit.routes.1.formatted}}
+{{transit.routes.2.formatted}}
 ```
 
-### With Color
+## Coloring
 
-```
-{center}COMMUTE
-{{traffic.traffic_color}} {{traffic.destination_name}}
-TIME: {{traffic.duration_minutes}}m
-DELAY: +{{traffic.delay_minutes}}m
-```
+This plugin does not emit a status or color variable. Transit responses have no
+"free-flow" baseline to compare against (the Routes API `staticDuration` field
+is drive-mode only), so there is no transit equivalent of the Traffic plugin's
+LIGHT / MODERATE / HEAVY index.
+
+Apply your own thresholds in the page template's color rules instead, which also
+lets you vary them by destination and by time of day.
 
 ## Configuration
 
@@ -98,13 +95,16 @@ Each route requires:
 - `destination`: Ending address or lat,lng
 - `destination_name`: Short name for display
 
-## Traffic Status Colors
+## Notes and Limitations
 
-- **Green (LIGHT)**: Normal traffic
-- **Yellow (MODERATE)**: 20%+ slower than normal
-- **Red (HEAVY)**: 50%+ slower than normal
+- Routes API returns transit results only where Google has transit coverage for
+  the origin/destination pair. If no transit route exists, that route is skipped
+  and a warning is logged.
+- Durations reflect a departure at request time, including expected wait for the
+  next departure. Off-hours requests may return long durations or no route.
+- `routingPreference` is not sent — it is a drive-mode-only field and the Routes
+  API rejects requests that include it with `travelMode: TRANSIT`.
 
 ## Author
 
 FiestaBoard Team
-
