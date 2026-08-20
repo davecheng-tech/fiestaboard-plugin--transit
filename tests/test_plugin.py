@@ -1,6 +1,7 @@
 """Tests for the transit plugin."""
 
 import json
+import shutil
 import pytest
 from pathlib import Path
 from unittest.mock import Mock, patch
@@ -407,3 +408,50 @@ class TestManifestMetadata:
 
     def test_category_is_transit(self):
         assert self.manifest["category"] == "transit"
+
+
+class TestCoreManifestValidation:
+    """Validate manifest.json with FiestaBoard core's own loader.
+
+    The hand-rolled metadata checks above passed on a manifest that core
+    rejected outright (a 16-tile teaser against a 15-tile limit), which kept
+    the plugin off the Integrations page entirely. Anything core treats as a
+    hard error must fail here instead.
+    """
+
+    def test_manifest_loads_without_errors(self):
+        from src.plugins.manifest import load_manifest
+
+        manifest, errors = load_manifest(MANIFEST_PATH)
+        assert errors == [], f"core rejected manifest.json: {errors}"
+        assert manifest is not None
+
+    def test_manifest_id_matches_directory_name(self):
+        """The loader refuses a plugin whose manifest id != its directory."""
+        from src.plugins.manifest import load_manifest
+
+        manifest, _ = load_manifest(MANIFEST_PATH)
+        assert manifest.id == "transit"
+
+    def test_plugin_loads_through_core_loader(self, tmp_path):
+        """End-to-end: core discovers, validates, and imports this plugin."""
+        from src.plugins.loader import PluginLoader
+
+        # A real copy, not a symlink: the loader resolves the plugin dir and
+        # rejects anything that escapes the external dir (loader.py's
+        # containment barrier), so a symlinked plugin never loads.
+        repo_root = MANIFEST_PATH.parent
+        ext_dir = tmp_path / "external_plugins"
+        ext_dir.mkdir()
+        shutil.copytree(
+            repo_root,
+            ext_dir / "transit",
+            ignore=shutil.ignore_patterns(".git", "__pycache__", ".pytest_cache"),
+        )
+
+        loader = PluginLoader(plugins_dir=tmp_path / "builtin", external_dirs=[ext_dir])
+        loaded = loader.load_all_plugins()
+
+        assert loader.load_errors == {}
+        assert "transit" in loaded
+        assert loaded["transit"].plugin_id == "transit"
